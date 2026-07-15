@@ -1,0 +1,30 @@
+services:
+  ollama:
+    image: ollama/ollama:0.3.12
+    container_name: verse-helper-ollama
+    volumes:
+      - ollama_models:/root/.ollama
+    ports:
+      - "11435:11434"
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    restart: unless-stopped
+
+  app:
+    build: .
+    container_name: verse-helper-app
+    ports:
+      - "8000:8000"
+    environment:
+      - OLLAMA_URL=http://ollama:11434
+      - MODEL_NAME=llama3.2:1b
+    depends_on:
+      - ollama
+    restart: unless-stopped
+
+volumes:
+  ollama_models:
